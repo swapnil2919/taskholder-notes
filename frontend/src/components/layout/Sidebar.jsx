@@ -1,6 +1,6 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, CheckSquare, FileText, LogOut, Zap } from 'lucide-react'
+import { LayoutDashboard, CheckSquare, FileText, LogOut, Zap, Mail } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
 const navItems = [
@@ -55,6 +55,18 @@ export default function Sidebar() {
             )}
           </NavLink>
         ))}
+
+        <div className="pt-2 mt-2 border-t border-slate-100">
+          <a
+            href="https://ai-email-sender.streamlit.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-sky-50 hover:text-sky-700 transition-all duration-200"
+          >
+            <Mail size={18} />
+            Send Email
+          </a>
+        </div>
       </nav>
 
       <div className="p-4 border-t border-slate-100">
