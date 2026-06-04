@@ -34,7 +34,7 @@ export default function NoteModal({ isOpen, onClose, onSubmit, note, loading }) 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="relative rounded-2xl w-full max-w-md p-6 z-10 border border-white/10"
+            className="relative rounded-2xl w-full max-w-2xl p-6 z-10 border border-white/10"
             style={{ background: '#12121e', boxShadow: '0 0 40px rgba(0,0,0,0.5)' }}
           >
             <div className="flex items-center justify-between mb-5">
@@ -53,7 +53,7 @@ export default function NoteModal({ isOpen, onClose, onSubmit, note, loading }) 
 
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Content</label>
-                <textarea {...register('content')} className="input-field resize-none" rows={5} placeholder="Write your note..." />
+                <textarea {...register('content')} className="input-field" rows={12} placeholder="Write your note..." style={{ resize: 'vertical', minHeight: '200px' }} />
               </div>
 
               <div className="flex items-center gap-3">

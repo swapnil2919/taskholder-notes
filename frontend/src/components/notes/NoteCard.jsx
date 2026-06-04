@@ -41,10 +41,6 @@ export default function NoteCard({ note, onEdit, onDelete, onTogglePin, onView }
         </div>
       </div>
 
-      {note.content && (
-        <p className="text-slate-500 text-sm mt-2 line-clamp-4 whitespace-pre-wrap">{note.content}</p>
-      )}
-
       <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/5">
         {note.category && (
           <span className="badge bg-purple-500/15 text-purple-400 border border-purple-500/20 flex items-center gap-1">

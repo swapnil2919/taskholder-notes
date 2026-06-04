@@ -46,7 +46,7 @@ export default function TaskModal({ isOpen, onClose, onSubmit, task, loading }) 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="relative rounded-2xl w-full max-w-md p-6 z-10 border border-white/10"
+            className="relative rounded-2xl w-full max-w-2xl p-6 z-10 border border-white/10"
             style={{ background: '#12121e', boxShadow: '0 0 40px rgba(0,0,0,0.5)' }}
           >
             <div className="flex items-center justify-between mb-5">
@@ -65,7 +65,7 @@ export default function TaskModal({ isOpen, onClose, onSubmit, task, loading }) 
 
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Description</label>
-                <textarea {...register('description')} className="input-field resize-none" rows={3} placeholder="Optional description" />
+                <textarea {...register('description')} className="input-field" rows={8} placeholder="Optional description" style={{ resize: 'vertical', minHeight: '150px' }} />
               </div>
 
               <div className="grid grid-cols-2 gap-3">

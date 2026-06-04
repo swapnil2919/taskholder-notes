@@ -30,9 +30,7 @@ export default function TaskCard({ task, onEdit, onDelete }) {
           <h3 className={`font-semibold truncate ${task.status === 'done' ? 'line-through text-slate-600' : 'text-white'}`}>
             {task.title}
           </h3>
-          {task.description && (
-            <p className="text-slate-600 text-sm mt-1 line-clamp-2">{task.description}</p>
-          )}
+
         </div>
         <div className="flex gap-1 shrink-0">
           <button onClick={() => onEdit(task)} className="p-1.5 hover:bg-primary-500/10 hover:text-primary-400 text-slate-600 rounded-lg transition-colors">
