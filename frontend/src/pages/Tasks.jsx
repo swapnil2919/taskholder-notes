@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { Plus, Filter } from 'lucide-react'
 import { getTasks, createTask, updateTask, deleteTask } from '../api/tasks'
@@ -92,24 +92,24 @@ export default function Tasks() {
       />
 
       <div className="flex flex-wrap gap-3 mb-6">
-        <div className="flex items-center gap-2 bg-white rounded-lg border border-slate-200 p-1">
-          <Filter size={14} className="text-slate-400 ml-2" />
+        <div className="flex items-center gap-1 rounded-lg border border-white/10 p-1" style={{ background: '#12121e' }}>
+          <Filter size={14} className="text-slate-600 ml-2" />
           {STATUSES.map(s => (
             <button
               key={s.value}
               onClick={() => setStatusFilter(s.value)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${statusFilter === s.value ? 'bg-primary-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${statusFilter === s.value ? 'bg-primary-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
             >
               {s.label}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2 bg-white rounded-lg border border-slate-200 p-1">
+        <div className="flex items-center gap-1 rounded-lg border border-white/10 p-1" style={{ background: '#12121e' }}>
           {PRIORITIES.map(p => (
             <button
               key={p.value}
               onClick={() => setPriorityFilter(p.value)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${priorityFilter === p.value ? 'bg-primary-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${priorityFilter === p.value ? 'bg-primary-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
             >
               {p.label}
             </button>
@@ -119,8 +119,8 @@ export default function Tasks() {
 
       {tasks.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-slate-400 text-lg">No tasks found</p>
-          <p className="text-slate-300 text-sm mt-1">Create your first task to get started</p>
+          <p className="text-slate-600 text-lg">No tasks found</p>
+          <p className="text-slate-700 text-sm mt-1">Create your first task to get started</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

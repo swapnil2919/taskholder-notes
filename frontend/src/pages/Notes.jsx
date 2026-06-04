@@ -83,14 +83,14 @@ export default function Notes() {
 
       {notes.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-slate-400 text-lg">No notes yet</p>
-          <p className="text-slate-300 text-sm mt-1">Create your first note to get started</p>
+          <p className="text-slate-600 text-lg">No notes yet</p>
+          <p className="text-slate-700 text-sm mt-1">Create your first note to get started</p>
         </div>
       ) : (
         <>
           {pinned.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">📌 Pinned</h3>
+              <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-widest mb-3">📌 Pinned</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 <AnimatePresence mode="popLayout">
                   {pinned.map(note => (
@@ -100,10 +100,9 @@ export default function Notes() {
               </div>
             </div>
           )}
-
           {unpinned.length > 0 && (
             <div>
-              {pinned.length > 0 && <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">All Notes</h3>}
+              {pinned.length > 0 && <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-widest mb-3">All Notes</h3>}
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 <AnimatePresence mode="popLayout">
                   {unpinned.map(note => (
@@ -123,7 +122,6 @@ export default function Notes() {
         note={editingNote}
         loading={loading}
       />
-
       <NoteViewModal
         isOpen={!!viewingNote}
         onClose={() => setViewingNote(null)}
