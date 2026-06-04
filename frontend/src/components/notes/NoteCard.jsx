@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
-import { Pin, Pencil, Trash2, Tag } from 'lucide-react'
+import { Pin, Pencil, Trash2, Tag, Eye } from 'lucide-react'
 
-export default function NoteCard({ note, onEdit, onDelete, onTogglePin }) {
+export default function NoteCard({ note, onEdit, onDelete, onTogglePin, onView }) {
   return (
     <motion.div
       layout
@@ -29,14 +29,23 @@ export default function NoteCard({ note, onEdit, onDelete, onTogglePin }) {
             <Pin size={14} />
           </button>
           <button
+            onClick={() => onView(note)}
+            className="p-1.5 hover:bg-sky-50 hover:text-sky-600 rounded-lg transition-colors"
+            title="View"
+          >
+            <Eye size={14} />
+          </button>
+          <button
             onClick={() => onEdit(note)}
             className="p-1.5 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors"
+            title="Edit"
           >
             <Pencil size={14} />
           </button>
           <button
             onClick={() => onDelete(note.id)}
             className="p-1.5 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors"
+            title="Delete"
           >
             <Trash2 size={14} />
           </button>

@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react'
 import { getNotes, createNote, updateNote, deleteNote } from '../api/notes'
 import NoteCard from '../components/notes/NoteCard'
 import NoteModal from '../components/notes/NoteModal'
+import NoteViewModal from '../components/notes/NoteViewModal'
 import Header from '../components/layout/Header'
 
 export default function Notes() {
@@ -12,6 +13,7 @@ export default function Notes() {
   const [loading, setLoading] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingNote, setEditingNote] = useState(null)
+  const [viewingNote, setViewingNote] = useState(null)
 
   const fetchNotes = useCallback(async () => {
     try {
@@ -92,7 +94,7 @@ export default function Notes() {
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 <AnimatePresence mode="popLayout">
                   {pinned.map(note => (
-                    <NoteCard key={note.id} note={note} onEdit={n => { setEditingNote(n); setModalOpen(true) }} onDelete={handleDelete} onTogglePin={handleTogglePin} />
+                    <NoteCard key={note.id} note={note} onView={n => setViewingNote(n)} onEdit={n => { setEditingNote(n); setModalOpen(true) }} onDelete={handleDelete} onTogglePin={handleTogglePin} />
                   ))}
                 </AnimatePresence>
               </div>
@@ -105,7 +107,7 @@ export default function Notes() {
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 <AnimatePresence mode="popLayout">
                   {unpinned.map(note => (
-                    <NoteCard key={note.id} note={note} onEdit={n => { setEditingNote(n); setModalOpen(true) }} onDelete={handleDelete} onTogglePin={handleTogglePin} />
+                    <NoteCard key={note.id} note={note} onView={n => setViewingNote(n)} onEdit={n => { setEditingNote(n); setModalOpen(true) }} onDelete={handleDelete} onTogglePin={handleTogglePin} />
                   ))}
                 </AnimatePresence>
               </div>
@@ -120,6 +122,13 @@ export default function Notes() {
         onSubmit={handleSubmit}
         note={editingNote}
         loading={loading}
+      />
+
+      <NoteViewModal
+        isOpen={!!viewingNote}
+        onClose={() => setViewingNote(null)}
+        note={viewingNote}
+        onEdit={n => { setViewingNote(null); setEditingNote(n); setModalOpen(true) }}
       />
     </div>
   )
