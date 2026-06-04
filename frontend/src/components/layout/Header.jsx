@@ -8,7 +8,7 @@ export default function Header({ title, subtitle, action }) {
       className="flex items-center justify-between mb-8"
     >
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">{title}</h1>
+        <h1 className="text-2xl font-bold text-white">{title}</h1>
         {subtitle && <p className="text-slate-500 text-sm mt-0.5">{subtitle}</p>}
       </div>
       {action && <div>{action}</div>}

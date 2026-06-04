@@ -16,12 +16,42 @@ export default {
           800: '#5b21b6',
           900: '#4c1d95',
         },
+        dark: {
+          900: '#0a0a14',
+          800: '#0d0d1a',
+          700: '#12121e',
+          600: '#16162a',
+          500: '#1e1e35',
+          400: '#2d2d4a',
+          300: '#3d3d5c',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        soft: '0 2px 15px -3px rgba(0,0,0,0.07), 0 10px 20px -2px rgba(0,0,0,0.04)',
+        soft: '0 2px 15px -3px rgba(0,0,0,0.3), 0 10px 20px -2px rgba(0,0,0,0.2)',
+        glow: '0 0 20px rgba(139,92,246,0.15)',
+        'glow-lg': '0 0 40px rgba(139,92,246,0.2)',
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'purple-glow': 'radial-gradient(ellipse at top, rgba(139,92,246,0.15) 0%, transparent 70%)',
+      },
+      animation: {
+        'float': 'float 6s ease-in-out infinite',
+        'pulse-slow': 'pulse 4s ease-in-out infinite',
+        'twinkle': 'twinkle 3s ease-in-out infinite',
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        twinkle: {
+          '0%, 100%': { opacity: 1 },
+          '50%': { opacity: 0.3 },
+        },
       },
     },
   },

@@ -11,7 +11,7 @@ import Notes from './pages/Notes'
 
 function AppLayout() {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen" style={{ background: '#0a0a14' }}>
       <Sidebar />
       <main className="flex-1 ml-60 p-8 min-h-screen">
         <Outlet />
@@ -24,7 +24,17 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: '#12121e',
+              color: '#fff',
+              border: '1px solid rgba(255,255,255,0.1)',
+            },
+          }}
+        />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
