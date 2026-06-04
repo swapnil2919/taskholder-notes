@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { CheckSquare, TrendingUp, ListTodo, FileText, ArrowUp } from 'lucide-react'
-import { getTaskStats } from '../api/tasks'
+import { CheckSquare, TrendingUp, ListTodo, FileText, Filter } from 'lucide-react'
+import { getTaskStats, getTasks } from '../api/tasks'
 import { getNotes } from '../api/notes'
-import { getTasks } from '../api/tasks'
 import { useAuth } from '../context/AuthContext'
 import Header from '../components/layout/Header'
 
@@ -43,25 +42,43 @@ const StatCard = ({ icon: Icon, label, value, gradient, delay }) => (
   </motion.div>
 )
 
+const STATUS_FILTERS = [
+  { value: '', label: 'All' },
+  { value: 'todo', label: 'To Do' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'done', label: 'Done' },
+]
+
+const statusColors = {
+  todo: 'bg-slate-700 text-slate-300',
+  in_progress: 'bg-blue-500/20 text-blue-400',
+  done: 'bg-green-500/20 text-green-400',
+}
+const statusLabels = { todo: 'To Do', in_progress: 'In Progress', done: 'Done' }
+const dotColors = { todo: '#64748b', in_progress: '#60a5fa', done: '#4ade80' }
+const priorityConfig = {
+  low: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20',
+  medium: 'bg-amber-500/15 text-amber-400 border border-amber-500/20',
+  high: 'bg-red-500/15 text-red-400 border border-red-500/20',
+}
+
 export default function Dashboard() {
   const { user } = useAuth()
   const [stats, setStats] = useState({ total: 0, done: 0, in_progress: 0, todo: 0 })
   const [noteCount, setNoteCount] = useState(0)
-  const [recentTasks, setRecentTasks] = useState([])
+  const [allTasks, setAllTasks] = useState([])
+  const [statusFilter, setStatusFilter] = useState('')
 
   useEffect(() => {
     getTaskStats().then(r => setStats(r.data)).catch(() => {})
     getNotes().then(r => setNoteCount(r.data.length)).catch(() => {})
-    getTasks().then(r => setRecentTasks(r.data.slice(0, 5))).catch(() => {})
+    getTasks().then(r => setAllTasks(r.data)).catch(() => {})
   }, [])
 
-  const statusColors = {
-    todo: 'bg-slate-700 text-slate-300',
-    in_progress: 'bg-blue-500/20 text-blue-400',
-    done: 'bg-green-500/20 text-green-400'
-  }
-  const statusLabels = { todo: 'To Do', in_progress: 'In Progress', done: 'Done' }
-  const dotColors = { todo: '#64748b', in_progress: '#60a5fa', done: '#4ade80' }
+  const recentTasks = (statusFilter
+    ? allTasks.filter(t => t.status === statusFilter)
+    : allTasks
+  ).slice(0, 5)
 
   return (
     <div>
@@ -81,29 +98,70 @@ export default function Dashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="rounded-xl border border-white/8 p-6"
+        className="rounded-xl border border-white/8 p-4 md:p-6"
         style={{ background: '#12121e' }}
       >
-        <h2 className="text-lg font-semibold text-white mb-4">Recent Tasks</h2>
+        {/* Header row */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 className="text-lg font-semibold text-white">Recent Tasks</h2>
+
+          {/* Status filter */}
+          <div
+            className="flex items-center gap-0.5 rounded-lg border border-white/10 p-1 overflow-x-auto"
+            style={{ background: '#0a0a14' }}
+          >
+            <Filter size={13} className="text-slate-600 ml-1.5 shrink-0" />
+            {STATUS_FILTERS.map(s => (
+              <button
+                key={s.value}
+                onClick={() => setStatusFilter(s.value)}
+                className={`px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-all ${
+                  statusFilter === s.value
+                    ? 'bg-primary-600 text-white'
+                    : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {recentTasks.length === 0 ? (
-          <p className="text-slate-600 text-sm text-center py-6">No tasks yet. Create your first task!</p>
+          <p className="text-slate-600 text-sm text-center py-6">No tasks found.</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-1">
             {recentTasks.map((task, i) => (
               <motion.div
                 key={task.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 + i * 0.05 }}
-                className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0"
+                className="flex flex-wrap items-center justify-between gap-2 py-2.5 border-b border-white/5 last:border-0"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: dotColors[task.status] }} />
-                  <span className={`text-sm font-medium ${task.status === 'done' ? 'line-through text-slate-600' : 'text-slate-300'}`}>
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: dotColors[task.status] }}
+                  />
+                  <span
+                    className={`text-sm font-medium truncate ${
+                      task.status === 'done' ? 'line-through text-slate-600' : 'text-slate-300'
+                    }`}
+                  >
                     {task.title}
                   </span>
                 </div>
-                <span className={`badge ${statusColors[task.status]}`}>{statusLabels[task.status]}</span>
+                <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                  <span className={`badge ${statusColors[task.status]}`}>
+                    {statusLabels[task.status]}
+                  </span>
+                  {task.priority && (
+                    <span className={`badge ${priorityConfig[task.priority]}`}>
+                      {task.priority}
+                    </span>
+                  )}
+                </div>
               </motion.div>
             ))}
           </div>

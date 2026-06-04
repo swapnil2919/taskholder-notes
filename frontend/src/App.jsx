@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { Menu, Zap } from 'lucide-react'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import Sidebar from './components/layout/Sidebar'
@@ -10,11 +12,47 @@ import Tasks from './pages/Tasks'
 import Notes from './pages/Notes'
 
 function AppLayout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
   return (
     <div className="flex min-h-screen" style={{ background: '#0a0a14' }}>
-      <Sidebar />
-      <main className="flex-1 ml-60 p-8 min-h-screen">
-        <Outlet />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-[19] md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <main className="flex-1 md:ml-60 min-h-screen flex flex-col">
+        {/* Mobile top bar */}
+        <div
+          className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-white/5 sticky top-0 z-[8]"
+          style={{ background: 'rgba(10,10,20,0.95)', backdropFilter: 'blur(20px)' }}
+        >
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu size={20} />
+          </button>
+          <div className="flex items-center gap-2">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #7c3aed, #06b6d4)' }}
+            >
+              <Zap size={15} className="text-white" />
+            </div>
+            <span className="font-bold text-base gradient-text">TaskHolder</span>
+          </div>
+        </div>
+
+        <div className="flex-1 p-4 md:p-8">
+          <Outlet />
+        </div>
       </main>
     </div>
   )
