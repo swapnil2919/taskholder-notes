@@ -55,11 +55,15 @@ const STEPS = [
     title: 'Download & Transfer Script',
     desc: 'Download your pre-configured script and move it to Termux home folder.',
     detail: (
-      <div className="space-y-2 text-sm text-slate-400">
+      <div className="space-y-3 text-sm text-slate-400">
         <p>1. Click the <span className="text-white">Download Script</span> button below</p>
-        <p>2. Transfer <span className="text-cyan-400">taskholder_notify.py</span> to your phone</p>
-        <p>3. Move it to Termux home: <span className="text-white font-mono text-xs">/data/data/com.termux/files/home/</span></p>
-        <p className="text-xs text-slate-500">Tip: You can send the file to yourself via WhatsApp or email, then move it in Termux using <span className="font-mono">mv ~/storage/downloads/taskholder_notify.py ~/</span></p>
+        <p>2. The file will save to your phone's <span className="text-cyan-400">Downloads</span> folder</p>
+        <p>3. Open Termux and run these commands to move it:</p>
+        <CodeBlock code="termux-setup-storage" />
+        <p className="text-xs text-slate-500">☝ Run this once — it will ask for storage permission, tap <span className="text-white">Allow</span></p>
+        <CodeBlock code="mv ~/storage/downloads/taskholder_notify.py ~/" />
+        <p className="text-xs text-slate-500">Verify the file is there:</p>
+        <CodeBlock code="ls ~/" />
       </div>
     ),
   },
@@ -70,7 +74,16 @@ const STEPS = [
     detail: (
       <div className="space-y-3">
         <CodeBlock code="python ~/taskholder_notify.py" />
-        <p className="text-xs text-slate-500">Keep Termux open or use a session manager. The script sends a heartbeat every 30s so you can see connection status here.</p>
+        <p className="text-xs text-slate-500">Keep Termux open. The script sends a heartbeat every 30s — connection status updates automatically on this page.</p>
+
+        <div className="mt-3 rounded-lg border border-red-500/15 bg-red-500/5 p-3 space-y-2">
+          <p className="text-xs font-semibold text-red-400">To Stop the Script</p>
+          <p className="text-xs text-slate-400">Press <span className="font-mono text-white bg-white/10 px-1.5 py-0.5 rounded">Ctrl + C</span> in Termux — this cleanly stops the script.</p>
+          <p className="text-xs text-slate-500">If the script is running in background, find and kill it:</p>
+          <CodeBlock code="pkill -f taskholder_notify.py" />
+          <p className="text-xs text-slate-500">Or check running processes and stop manually:</p>
+          <CodeBlock code="ps aux | grep taskholder" />
+        </div>
       </div>
     ),
   },
