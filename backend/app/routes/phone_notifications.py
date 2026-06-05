@@ -234,9 +234,13 @@ def get_notifications():
             ["termux-notification-list"],
             capture_output=True, text=True, timeout=10
         )
-        if result.returncode != 0 or not result.stdout.strip():
+        output = result.stdout.strip()
+        if not output or output == "null":
             return []
-        return json.loads(result.stdout)
+        data = json.loads(output)
+        return data if isinstance(data, list) else []
+    except json.JSONDecodeError:
+        return []
     except Exception as e:
         print(f"[Error] Reading notifications: {{e}}", flush=True)
         return []
