@@ -6,10 +6,11 @@ import {
   Terminal, Package, Shield, Play,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import api from '../api/axios'
 import {
   getPhoneToken, regenerateToken, getConnectionStatus,
   getNotifications, markRead, deleteNotification,
-  clearAllNotifications, getDownloadScriptUrl,
+  clearAllNotifications,
 } from '../api/phoneNotifications'
 
 const POLL_INTERVAL = 8000 // 8 seconds
@@ -274,18 +275,16 @@ export default function PhoneNotifications() {
 
   const handleDownload = async () => {
     try {
-      const token_res = await getPhoneToken()
-      const authToken = localStorage.getItem('token')
-      const url = getDownloadScriptUrl()
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${authToken}` },
+      const res = await api.get('/phone-notifications/download-script', {
+        responseType: 'blob',
       })
-      if (!res.ok) throw new Error()
-      const blob = await res.blob()
+      const blob = new Blob([res.data], { type: 'text/x-python' })
       const link = document.createElement('a')
       link.href = URL.createObjectURL(blob)
       link.download = 'taskholder_notify.py'
+      document.body.appendChild(link)
       link.click()
+      document.body.removeChild(link)
       URL.revokeObjectURL(link.href)
       toast.success('Script downloaded!')
     } catch {

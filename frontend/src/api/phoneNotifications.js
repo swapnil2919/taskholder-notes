@@ -7,4 +7,3 @@ export const getNotifications = (params) => api.get('/phone-notifications', { pa
 export const markRead = (id) => api.patch(`/phone-notifications/${id}/read`)
 export const deleteNotification = (id) => api.delete(`/phone-notifications/${id}`)
 export const clearAllNotifications = () => api.delete('/phone-notifications')
-export const getDownloadScriptUrl = () => `${api.defaults.baseURL}/phone-notifications/download-script`
