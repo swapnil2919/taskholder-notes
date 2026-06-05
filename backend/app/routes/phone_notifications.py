@@ -189,18 +189,7 @@ async def clear_all_notifications(
     await db.commit()
 
 
-@router.get("/download-script", response_class=PlainTextResponse)
-async def download_script(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    # Auto-create token if not yet generated
-    if not current_user.phone_api_token:
-        current_user.phone_api_token = secrets.token_urlsafe(32)
-        await db.commit()
-        await db.refresh(current_user)
-
-    token = current_user.phone_api_token
+def _build_script(token: str) -> PlainTextResponse:
     script = f'''#!/usr/bin/env python3
 """
 TaskHolder Phone Notification Bridge
@@ -309,10 +298,29 @@ while True:
         print(f"[Error] {{e}}", flush=True)
         time.sleep(10)
 '''
-
-    filename = "taskholder_notify.py"
     return PlainTextResponse(
         content=script,
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": 'attachment; filename="taskholder_notify.py"'},
         media_type="text/x-python",
     )
+
+
+@router.get("/download-script-token", response_class=PlainTextResponse)
+async def download_script_by_token(
+    user: User = Depends(get_user_by_token),
+):
+    """Download script via phone API token — used by Termux curl command."""
+    return _build_script(user.phone_api_token)
+
+
+@router.get("/download-script", response_class=PlainTextResponse)
+async def download_script(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Download script via JWT — used by browser download button."""
+    if not current_user.phone_api_token:
+        current_user.phone_api_token = secrets.token_urlsafe(32)
+        await db.commit()
+        await db.refresh(current_user)
+    return _build_script(current_user.phone_api_token)

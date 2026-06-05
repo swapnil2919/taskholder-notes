@@ -53,16 +53,22 @@ const STEPS = [
   {
     icon: Download,
     title: 'Download & Transfer Script',
-    desc: 'Download your pre-configured script and move it to Termux home folder.',
+    desc: 'Easiest: download directly inside Termux using curl — no file transfer needed.',
     detail: (
       <div className="space-y-3 text-sm text-slate-400">
-        <p>1. Click the <span className="text-white">Download Script</span> button below</p>
-        <p>2. The file will save to your phone's <span className="text-cyan-400">Downloads</span> folder</p>
-        <p>3. Open Termux and run these commands to move it:</p>
+        <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-3 space-y-2">
+          <p className="text-xs font-semibold text-green-400">✅ Recommended — Download directly in Termux</p>
+          <p className="text-xs text-slate-400">Copy the curl command from the <span className="text-white">"Your Script"</span> section below and paste it in Termux. The script will be saved directly to the home folder.</p>
+        </div>
+
+        <p className="text-xs font-semibold text-slate-300 pt-1">Alternative — Browser download:</p>
+        <p>1. Click <span className="text-white">Download taskholder_notify.py</span> button below</p>
+        <p>2. File saves to <span className="text-cyan-400">Downloads</span> folder</p>
+        <p>3. In Termux, run once to allow storage access:</p>
         <CodeBlock code="termux-setup-storage" />
-        <p className="text-xs text-slate-500">☝ Run this once — it will ask for storage permission, tap <span className="text-white">Allow</span></p>
+        <p className="text-xs text-slate-500">☝ Tap <span className="text-white">Allow</span> on the permission popup</p>
+        <p>4. Move file to Termux home:</p>
         <CodeBlock code="mv ~/storage/downloads/taskholder_notify.py ~/" />
-        <p className="text-xs text-slate-500">Verify the file is there:</p>
         <CodeBlock code="ls ~/" />
       </div>
     ),
@@ -429,6 +435,21 @@ export default function PhoneNotifications() {
           <Download size={16} />
           Download taskholder_notify.py
         </button>
+
+        {/* Termux curl command */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Terminal size={13} className="text-green-400" />
+            <span className="text-xs font-semibold text-green-400">Download directly in Termux (Recommended)</span>
+          </div>
+          <p className="text-xs text-slate-500">Open Termux and paste this command — no browser download needed:</p>
+          <CodeBlock
+            code={token
+              ? `curl -H "X-API-Token: ${token}" https://taskholder-sp.vercel.app/api/phone-notifications/download-script-token -o ~/taskholder_notify.py`
+              : 'Loading your command...'}
+          />
+          <p className="text-xs text-slate-600">This saves the script directly to your Termux home folder.</p>
+        </div>
 
         {/* API Token */}
         <div className="space-y-2">
