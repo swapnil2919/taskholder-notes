@@ -287,8 +287,12 @@ export default function PhoneNotifications() {
       document.body.removeChild(link)
       URL.revokeObjectURL(link.href)
       toast.success('Script downloaded!')
-    } catch {
-      toast.error('Download failed')
+    } catch (err) {
+      const status = err?.response?.status
+      if (status === 401) toast.error('Session expired — please log in again')
+      else if (status === 404) toast.error('Backend not updated yet — please wait & retry')
+      else if (status === 500) toast.error('Server error — backend may still be restarting')
+      else toast.error(`Download failed (${status || 'network error'})`)
     }
   }
 
