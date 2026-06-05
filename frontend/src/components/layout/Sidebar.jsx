@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, CheckSquare, FileText, LogOut, Zap, Mail, X } from 'lucide-react'
+import { LayoutDashboard, CheckSquare, FileText, LogOut, Zap, Mail, X, Smartphone } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
   { to: '/notes', icon: FileText, label: 'Notes' },
+  { to: '/phone-notifications', icon: Smartphone, label: 'Phone Notifs' },
 ]
 
 export default function Sidebar({ isOpen, onClose }) {

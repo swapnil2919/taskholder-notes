@@ -13,8 +13,11 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
+    phone_api_token = Column(String, unique=True, nullable=True, index=True)
+    phone_script_last_seen = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     tasks = relationship("Task", back_populates="user", cascade="all, delete-orphan")
     notes = relationship("Note", back_populates="user", cascade="all, delete-orphan")
+    phone_notifications = relationship("PhoneNotification", back_populates="user", cascade="all, delete-orphan")
