@@ -5,7 +5,8 @@ import { Plus } from 'lucide-react'
 import { getNotes, createNote, updateNote, deleteNote } from '../api/notes'
 import NoteCard from '../components/notes/NoteCard'
 import NoteModal from '../components/notes/NoteModal'
-import NoteViewModal from '../components/notes/NoteViewModal'
+import NoteViewPage from '../components/notes/NoteViewPage'
+import TextEditorPage from '../components/common/TextEditorPage'
 import Header from '../components/layout/Header'
 
 export default function Notes() {
@@ -14,6 +15,7 @@ export default function Notes() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingNote, setEditingNote] = useState(null)
   const [viewingNote, setViewingNote] = useState(null)
+  const [textEditingNote, setTextEditingNote] = useState(null)
 
   const fetchNotes = useCallback(async () => {
     try {
@@ -32,6 +34,9 @@ export default function Notes() {
       if (editingNote) {
         await updateNote(editingNote.id, data)
         toast.success('Note updated!')
+        if (viewingNote?.id === editingNote.id) {
+          setViewingNote(prev => ({ ...prev, ...data }))
+        }
       } else {
         await createNote(data)
         toast.success('Note created!')
@@ -66,6 +71,26 @@ export default function Notes() {
     }
   }
 
+  const handleEdit = (note) => {
+    setEditingNote(note)
+    setModalOpen(true)
+  }
+
+  const handleTextSave = async ({ title, text }) => {
+    setLoading(true)
+    try {
+      await updateNote(textEditingNote.id, { title, content: text })
+      toast.success('Note updated!')
+      fetchNotes()
+      setViewingNote(prev => prev ? { ...prev, title, content: text } : prev)
+      setTextEditingNote(null)
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Something went wrong')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const pinned = notes.filter(n => n.is_pinned)
   const unpinned = notes.filter(n => !n.is_pinned)
 
@@ -94,7 +119,14 @@ export default function Notes() {
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 <AnimatePresence mode="popLayout">
                   {pinned.map(note => (
-                    <NoteCard key={note.id} note={note} onView={n => setViewingNote(n)} onEdit={n => { setEditingNote(n); setModalOpen(true) }} onDelete={handleDelete} onTogglePin={handleTogglePin} />
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      onView={setViewingNote}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onTogglePin={handleTogglePin}
+                    />
                   ))}
                 </AnimatePresence>
               </div>
@@ -106,7 +138,14 @@ export default function Notes() {
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 <AnimatePresence mode="popLayout">
                   {unpinned.map(note => (
-                    <NoteCard key={note.id} note={note} onView={n => setViewingNote(n)} onEdit={n => { setEditingNote(n); setModalOpen(true) }} onDelete={handleDelete} onTogglePin={handleTogglePin} />
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      onView={setViewingNote}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onTogglePin={handleTogglePin}
+                    />
                   ))}
                 </AnimatePresence>
               </div>
@@ -122,12 +161,29 @@ export default function Notes() {
         note={editingNote}
         loading={loading}
       />
-      <NoteViewModal
-        isOpen={!!viewingNote}
-        onClose={() => setViewingNote(null)}
-        note={viewingNote}
-        onEdit={n => { setViewingNote(null); setEditingNote(n); setModalOpen(true) }}
-      />
+
+      <AnimatePresence>
+        {viewingNote && !textEditingNote && (
+          <NoteViewPage
+            note={viewingNote}
+            onClose={() => setViewingNote(null)}
+            onEditConfig={handleEdit}
+            onEditText={note => setTextEditingNote(note)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {textEditingNote && (
+          <TextEditorPage
+            item={textEditingNote}
+            onClose={() => setTextEditingNote(null)}
+            onSave={handleTextSave}
+            loading={loading}
+            textLabel="content"
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

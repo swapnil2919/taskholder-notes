@@ -5,6 +5,8 @@ import { Plus, Filter, Search, X } from 'lucide-react'
 import { getTasks, createTask, updateTask, deleteTask } from '../api/tasks'
 import TaskCard from '../components/tasks/TaskCard'
 import TaskModal from '../components/tasks/TaskModal'
+import TaskViewPage from '../components/tasks/TaskViewPage'
+import TextEditorPage from '../components/common/TextEditorPage'
 import Header from '../components/layout/Header'
 
 const STATUSES = [
@@ -26,6 +28,8 @@ export default function Tasks() {
   const [loading, setLoading] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
+  const [viewingTask, setViewingTask] = useState(null)
+  const [textEditingTask, setTextEditingTask] = useState(null)
   const [statusFilter, setStatusFilter] = useState('')
   const [priorityFilter, setPriorityFilter] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -56,6 +60,9 @@ export default function Tasks() {
       if (editingTask) {
         await updateTask(editingTask.id, data)
         toast.success('Task updated!')
+        if (viewingTask?.id === editingTask.id) {
+          setViewingTask(prev => ({ ...prev, ...data }))
+        }
       } else {
         await createTask(data)
         toast.success('Task created!')
@@ -84,6 +91,21 @@ export default function Tasks() {
   const handleEdit = (task) => {
     setEditingTask(task)
     setModalOpen(true)
+  }
+
+  const handleTextSave = async ({ title, text }) => {
+    setLoading(true)
+    try {
+      await updateTask(textEditingTask.id, { title, description: text })
+      toast.success('Task updated!')
+      fetchTasks()
+      setViewingTask(prev => prev ? { ...prev, title, description: text } : prev)
+      setTextEditingTask(null)
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Something went wrong')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -177,7 +199,13 @@ export default function Tasks() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           <AnimatePresence mode="popLayout">
             {filteredTasks.map(task => (
-              <TaskCard key={task.id} task={task} onEdit={handleEdit} onDelete={handleDelete} />
+              <TaskCard
+                key={task.id}
+                task={task}
+                onView={setViewingTask}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
             ))}
           </AnimatePresence>
         </div>
@@ -190,6 +218,29 @@ export default function Tasks() {
         task={editingTask}
         loading={loading}
       />
+
+      <AnimatePresence>
+        {viewingTask && !textEditingTask && (
+          <TaskViewPage
+            task={viewingTask}
+            onClose={() => setViewingTask(null)}
+            onEditConfig={handleEdit}
+            onEditText={task => setTextEditingTask(task)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {textEditingTask && (
+          <TextEditorPage
+            item={textEditingTask}
+            onClose={() => setTextEditingTask(null)}
+            onSave={handleTextSave}
+            loading={loading}
+            textLabel="description"
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

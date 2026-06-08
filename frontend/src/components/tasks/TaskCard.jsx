@@ -13,7 +13,7 @@ const priorityConfig = {
   high: { class: 'bg-red-500/15 text-red-400 border border-red-500/20' },
 }
 
-export default function TaskCard({ task, onEdit, onDelete }) {
+export default function TaskCard({ task, onEdit, onDelete, onView }) {
   return (
     <motion.div
       layout
@@ -22,7 +22,8 @@ export default function TaskCard({ task, onEdit, onDelete }) {
       exit={{ opacity: 0, y: -10 }}
       whileHover={{ y: -3, boxShadow: '0 0 20px rgba(139,92,246,0.1)' }}
       transition={{ duration: 0.2 }}
-      className="rounded-xl border border-white/8 p-5 transition-shadow duration-200"
+      onClick={() => onView(task)}
+      className="rounded-xl border border-white/8 p-5 transition-shadow duration-200 cursor-pointer"
       style={{ background: '#12121e' }}
     >
       <div className="flex items-start justify-between gap-3">
@@ -33,10 +34,10 @@ export default function TaskCard({ task, onEdit, onDelete }) {
 
         </div>
         <div className="flex gap-1 shrink-0">
-          <button onClick={() => onEdit(task)} className="p-1.5 hover:bg-primary-500/10 hover:text-primary-400 text-slate-600 rounded-lg transition-colors">
+          <button onClick={(e) => { e.stopPropagation(); onEdit(task) }} className="p-1.5 hover:bg-primary-500/10 hover:text-primary-400 text-slate-600 rounded-lg transition-colors">
             <Pencil size={15} />
           </button>
-          <button onClick={() => onDelete(task.id)} className="p-1.5 hover:bg-red-500/10 hover:text-red-400 text-slate-600 rounded-lg transition-colors">
+          <button onClick={(e) => { e.stopPropagation(); onDelete(task.id) }} className="p-1.5 hover:bg-red-500/10 hover:text-red-400 text-slate-600 rounded-lg transition-colors">
             <Trash2 size={15} />
           </button>
         </div>
