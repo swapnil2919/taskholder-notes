@@ -512,8 +512,22 @@ export default function PhoneNotifications() {
         </div>
 
         {notifsLoading ? (
-          <div className="flex items-center justify-center py-12 text-slate-600 text-sm">
-            Loading...
+          <div className="space-y-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-white/5 p-4" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                <div className="flex items-start gap-3">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3.5 shimmer rounded w-20" />
+                      <div className="h-3 shimmer rounded w-12" />
+                    </div>
+                    <div className="h-4 shimmer rounded w-3/4" />
+                    <div className="h-3 shimmer rounded w-1/2" />
+                  </div>
+                  <div className="w-7 h-7 shimmer rounded-lg shrink-0" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : notifications.length === 0 ? (
           <div

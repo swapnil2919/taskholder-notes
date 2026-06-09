@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 import { Zap, Mail, Lock, User } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import Spinner from '../components/common/Spinner'
 
 function StarField() {
   return (
@@ -106,12 +107,13 @@ export default function Register() {
             <motion.button
               type="submit"
               disabled={loading}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full py-3 rounded-lg font-semibold text-white transition-all duration-200 mt-2"
+              whileHover={{ scale: loading ? 1 : 1.02 }}
+              whileTap={{ scale: loading ? 1 : 0.98 }}
+              className="w-full py-3 rounded-lg font-semibold text-white transition-all duration-200 mt-2 flex items-center justify-center gap-2 disabled:opacity-80"
               style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', boxShadow: '0 0 20px rgba(139,92,246,0.3)' }}
             >
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading && <Spinner size={17} />}
+              {loading ? 'Creating account…' : 'Create Account'}
             </motion.button>
           </form>
 

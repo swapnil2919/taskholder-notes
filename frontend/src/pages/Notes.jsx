@@ -1,21 +1,25 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { Plus } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { getNotes, createNote, updateNote, deleteNote } from '../api/notes'
 import NoteCard from '../components/notes/NoteCard'
 import NoteModal from '../components/notes/NoteModal'
 import NoteViewPage from '../components/notes/NoteViewPage'
 import TextEditorPage from '../components/common/TextEditorPage'
+import { NoteSkeleton } from '../components/common/SkeletonCard'
 import Header from '../components/layout/Header'
 
 export default function Notes() {
   const [notes, setNotes] = useState([])
   const [loading, setLoading] = useState(false)
+  const [pageLoading, setPageLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingNote, setEditingNote] = useState(null)
   const [viewingNote, setViewingNote] = useState(null)
   const [textEditingNote, setTextEditingNote] = useState(null)
+  const firstLoad = useRef(true)
 
   const fetchNotes = useCallback(async () => {
     try {
@@ -23,6 +27,11 @@ export default function Notes() {
       setNotes(data)
     } catch {
       toast.error('Failed to load notes')
+    } finally {
+      if (firstLoad.current) {
+        firstLoad.current = false
+        setPageLoading(false)
+      }
     }
   }, [])
 
@@ -106,7 +115,11 @@ export default function Notes() {
         }
       />
 
-      {notes.length === 0 ? (
+      {pageLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => <NoteSkeleton key={i} />)}
+        </div>
+      ) : notes.length === 0 ? (
         <div className="text-center py-20">
           <p className="text-slate-600 text-lg">No notes yet</p>
           <p className="text-slate-700 text-sm mt-1">Create your first note to get started</p>

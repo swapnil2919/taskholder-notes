@@ -4,6 +4,7 @@ import { CheckSquare, TrendingUp, ListTodo, FileText, Filter } from 'lucide-reac
 import { getTaskStats, getTasks } from '../api/tasks'
 import { getNotes } from '../api/notes'
 import { useAuth } from '../context/AuthContext'
+import { StatSkeleton, RowSkeleton } from '../components/common/SkeletonCard'
 import Header from '../components/layout/Header'
 
 const gradients = [
@@ -68,11 +69,16 @@ export default function Dashboard() {
   const [noteCount, setNoteCount] = useState(0)
   const [allTasks, setAllTasks] = useState([])
   const [statusFilter, setStatusFilter] = useState('')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getTaskStats().then(r => setStats(r.data)).catch(() => {})
-    getNotes().then(r => setNoteCount(r.data.length)).catch(() => {})
-    getTasks().then(r => setAllTasks(r.data)).catch(() => {})
+    Promise.all([
+      getTaskStats().then(r => setStats(r.data)),
+      getNotes().then(r => setNoteCount(r.data.length)),
+      getTasks().then(r => setAllTasks(r.data)),
+    ])
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
   const recentTasks = (statusFilter
@@ -87,25 +93,29 @@ export default function Dashboard() {
         subtitle="Here's what's happening with your tasks"
       />
 
+      {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-        <StatCard icon={ListTodo} label="Total Tasks" value={stats.total} gradient={gradients[0]} delay={0.1} />
-        <StatCard icon={TrendingUp} label="In Progress" value={stats.in_progress} gradient={gradients[1]} delay={0.15} />
-        <StatCard icon={CheckSquare} label="Completed" value={stats.done} gradient={gradients[2]} delay={0.2} />
-        <StatCard icon={FileText} label="Notes" value={noteCount} gradient={gradients[3]} delay={0.25} />
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => <StatSkeleton key={i} />)
+        ) : (
+          <>
+            <StatCard icon={ListTodo} label="Total Tasks" value={stats.total} gradient={gradients[0]} delay={0.1} />
+            <StatCard icon={TrendingUp} label="In Progress" value={stats.in_progress} gradient={gradients[1]} delay={0.15} />
+            <StatCard icon={CheckSquare} label="Completed" value={stats.done} gradient={gradients[2]} delay={0.2} />
+            <StatCard icon={FileText} label="Notes" value={noteCount} gradient={gradients[3]} delay={0.25} />
+          </>
+        )}
       </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
+        transition={{ delay: loading ? 0 : 0.3 }}
         className="rounded-xl border border-white/8 p-4 md:p-6"
         style={{ background: '#12121e' }}
       >
-        {/* Header row */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h2 className="text-lg font-semibold text-white">Recent Tasks</h2>
-
-          {/* Status filter */}
           <div
             className="flex items-center gap-0.5 rounded-lg border border-white/10 p-1 overflow-x-auto"
             style={{ background: '#0a0a14' }}
@@ -116,9 +126,7 @@ export default function Dashboard() {
                 key={s.value}
                 onClick={() => setStatusFilter(s.value)}
                 className={`px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-all ${
-                  statusFilter === s.value
-                    ? 'bg-primary-600 text-white'
-                    : 'text-slate-500 hover:text-slate-300'
+                  statusFilter === s.value ? 'bg-primary-600 text-white' : 'text-slate-500 hover:text-slate-300'
                 }`}
               >
                 {s.label}
@@ -127,7 +135,11 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {recentTasks.length === 0 ? (
+        {loading ? (
+          <div className="space-y-0">
+            {Array.from({ length: 5 }).map((_, i) => <RowSkeleton key={i} />)}
+          </div>
+        ) : recentTasks.length === 0 ? (
           <p className="text-slate-600 text-sm text-center py-6">No tasks found.</p>
         ) : (
           <div className="space-y-1">

@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { X } from 'lucide-react'
+import Spinner from '../common/Spinner'
 
 export default function NoteModal({ isOpen, onClose, onSubmit, note, loading }) {
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
@@ -70,7 +71,8 @@ export default function NoteModal({ isOpen, onClose, onSubmit, note, loading }) 
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={onClose} className="btn-secondary flex-1 justify-center">Cancel</button>
                 <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center">
-                  {loading ? 'Saving...' : note ? 'Update' : 'Create'}
+                  {loading && <Spinner size={15} />}
+                  {loading ? 'Saving…' : note ? 'Update' : 'Create'}
                 </button>
               </div>
             </form>

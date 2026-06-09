@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { Plus, Filter, Search, X } from 'lucide-react'
@@ -7,6 +7,7 @@ import TaskCard from '../components/tasks/TaskCard'
 import TaskModal from '../components/tasks/TaskModal'
 import TaskViewPage from '../components/tasks/TaskViewPage'
 import TextEditorPage from '../components/common/TextEditorPage'
+import { TaskSkeleton } from '../components/common/SkeletonCard'
 import Header from '../components/layout/Header'
 
 const STATUSES = [
@@ -26,6 +27,7 @@ const PRIORITIES = [
 export default function Tasks() {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(false)
+  const [pageLoading, setPageLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
   const [viewingTask, setViewingTask] = useState(null)
@@ -33,6 +35,7 @@ export default function Tasks() {
   const [statusFilter, setStatusFilter] = useState('')
   const [priorityFilter, setPriorityFilter] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const firstLoad = useRef(true)
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -43,6 +46,11 @@ export default function Tasks() {
       setTasks(data)
     } catch {
       toast.error('Failed to load tasks')
+    } finally {
+      if (firstLoad.current) {
+        firstLoad.current = false
+        setPageLoading(false)
+      }
     }
   }, [statusFilter, priorityFilter])
 
@@ -182,7 +190,11 @@ export default function Tasks() {
         </div>
       </div>
 
-      {filteredTasks.length === 0 ? (
+      {pageLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => <TaskSkeleton key={i} />)}
+        </div>
+      ) : filteredTasks.length === 0 ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -190,9 +202,7 @@ export default function Tasks() {
         >
           <p className="text-slate-600 text-lg">No tasks found</p>
           <p className="text-slate-700 text-sm mt-1">
-            {searchQuery
-              ? 'Try a different search term'
-              : 'Create your first task to get started'}
+            {searchQuery ? 'Try a different search term' : 'Create your first task to get started'}
           </p>
         </motion.div>
       ) : (
