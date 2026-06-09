@@ -2,6 +2,54 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Pencil, Calendar, Tag, Settings, FileText, ChevronDown } from 'lucide-react'
 
+function renderLine(line, idx) {
+  const parts = line.split(/(\*\*[^*]+\*\*)/)
+  return (
+    <span key={idx}>
+      {parts.map((part, i) =>
+        part.startsWith('**') && part.endsWith('**')
+          ? <strong key={i} className="text-white font-semibold">{part.slice(2, -2)}</strong>
+          : part
+      )}
+    </span>
+  )
+}
+
+function RichText({ text }) {
+  if (!text) return null
+  const lines = text.split('\n')
+  const nodes = []
+  let bulletGroup = []
+
+  const flushBullets = () => {
+    if (bulletGroup.length) {
+      nodes.push(
+        <ul key={`ul-${nodes.length}`} className="list-none pl-0 my-1">
+          {bulletGroup.map((b, i) => (
+            <li key={i} className="flex gap-2 items-start">
+              <span className="text-primary-400 mt-0.5 shrink-0">•</span>
+              <span>{renderLine(b, i)}</span>
+            </li>
+          ))}
+        </ul>
+      )
+      bulletGroup = []
+    }
+  }
+
+  lines.forEach((line, i) => {
+    if (line.startsWith('• ')) {
+      bulletGroup.push(line.slice(2))
+    } else {
+      flushBullets()
+      nodes.push(<span key={i} className="block">{renderLine(line, i)}{'​'}</span>)
+    }
+  })
+  flushBullets()
+
+  return <div className="text-slate-400 text-[15px] leading-7">{nodes}</div>
+}
+
 const statusConfig = {
   todo: { label: 'To Do', class: 'bg-slate-700/60 text-slate-400' },
   in_progress: { label: 'In Progress', class: 'bg-blue-500/15 text-blue-400 border border-blue-500/20' },
@@ -119,7 +167,7 @@ export default function TaskViewPage({ task, onClose, onEditConfig, onEditText }
           </div>
 
           {task.description ? (
-            <p className="text-slate-400 text-[15px] leading-relaxed whitespace-pre-wrap">{task.description}</p>
+            <RichText text={task.description} />
           ) : (
             <p className="text-slate-700 italic text-sm">
               No description — click Edit &gt; Edit Text to add one.
