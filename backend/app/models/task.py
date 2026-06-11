@@ -1,9 +1,9 @@
 import uuid
 import enum
-from sqlalchemy import Column, String, Text, DateTime, Enum, ForeignKey
+from sqlalchemy import Column, String, Text, DateTime, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
-from ..database import Base
+from ..database import UserBase
 
 
 class TaskStatus(str, enum.Enum):
@@ -18,7 +18,7 @@ class TaskPriority(str, enum.Enum):
     high = "high"
 
 
-class Task(Base):
+class Task(UserBase):
     __tablename__ = "tasks"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

@@ -4,6 +4,12 @@ from typing import AsyncGenerator
 
 
 class Base(DeclarativeBase):
+    """Main DB tables: users, db_configs, phone_notifications."""
+    pass
+
+
+class UserBase(DeclarativeBase):
+    """Per-user DB tables: notes, tasks."""
     pass
 
 

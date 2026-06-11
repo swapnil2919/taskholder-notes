@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy import select, text
-from ..database import get_main_db, get_cached_engine_factory, Base
+from ..database import get_main_db, get_cached_engine_factory, UserBase
 from ..models.db_config import DBConfig
 from ..models.user import User
 from ..auth.deps import get_current_user
@@ -44,7 +44,19 @@ async def _test_and_setup_user_db(url: str) -> int:
 
     try:
         async with test_engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+            # Drop legacy FK constraints that reference users table (from old schema versions)
+            await conn.execute(text("""
+                DO $$
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'notes') THEN
+                        ALTER TABLE notes DROP CONSTRAINT IF EXISTS notes_user_id_fkey;
+                    END IF;
+                    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'tasks') THEN
+                        ALTER TABLE tasks DROP CONSTRAINT IF EXISTS tasks_user_id_fkey;
+                    END IF;
+                END $$;
+            """))
+            await conn.run_sync(UserBase.metadata.create_all)
     except Exception as exc:
         await test_engine.dispose()
         raise HTTPException(
