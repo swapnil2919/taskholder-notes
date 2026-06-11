@@ -1,0 +1,9 @@
+[
+  {
+    "id": "3cf7dd64-a46a-457c-acff-ad92eb24f744",
+    "name": "Default DB",
+    "url": "postgresql+asyncpg://neondb_owner:npg_ETcRWS7BF8Yi@ep-polished-field-ap26xxnp-pooler.c-7.us-east-1.aws.neon.tech/neondb",
+    "host": "ep-polished-field-ap26xxnp-pooler.c-7.us-east-1.aws.neon.tech",
+    "size_mb": null
+  }
+]

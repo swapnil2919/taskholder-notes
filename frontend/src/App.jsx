@@ -12,6 +12,7 @@ import Tasks from './pages/Tasks'
 import Notes from './pages/Notes'
 import PhoneNotifications from './pages/PhoneNotifications'
 import Browser from './pages/Browser'
+import DbSetup from './pages/DbSetup'
 
 function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -78,6 +79,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/databases" element={<DbSetup />} />
           <Route
             path="/"
             element={
@@ -92,6 +94,7 @@ export default function App() {
             <Route path="notes" element={<Notes />} />
             <Route path="phone-notifications" element={<PhoneNotifications />} />
             <Route path="browser" element={<Browser />} />
+            <Route path="databases" element={<DbSetup />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

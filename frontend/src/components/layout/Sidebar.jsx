@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, CheckSquare, FileText, LogOut, Mail, X, Smartphone, Globe } from 'lucide-react'
+import { LayoutDashboard, CheckSquare, FileText, LogOut, Mail, X, Smartphone, Globe, Database } from 'lucide-react'
 import SpiderManIcon from '../common/SpiderManIcon'
 import { useAuth } from '../../context/AuthContext'
 
@@ -9,6 +9,7 @@ const navItems = [
   { to: '/notes', icon: FileText, label: 'Notes' },
   { to: '/phone-notifications', icon: Smartphone, label: 'Phone Notifs' },
   { to: '/browser', icon: Globe, label: 'Browser' },
+  { to: '/databases', icon: Database, label: 'Databases' },
 ]
 
 export default function Sidebar({ isOpen, onClose }) {
