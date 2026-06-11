@@ -23,7 +23,26 @@ export function AuthProvider({ children }) {
       toast.success(`Welcome back, ${data.user.username}!`)
       navigate('/dashboard')
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Login failed')
+      const status = err.response?.status
+      const detail = err.response?.data?.detail
+      let message
+      if (typeof detail === 'string' && detail.trim()) {
+        const lower = detail.toLowerCase()
+        if (lower.includes('not found') || lower.includes('no user') || lower.includes('does not exist')) {
+          message = 'No account found with this email. Please register first.'
+        } else if (lower.includes('incorrect') || lower.includes('wrong') || lower.includes('invalid') || lower.includes('password')) {
+          message = 'You entered the wrong password. Please try again.'
+        } else {
+          message = detail
+        }
+      } else if (status === 404) {
+        message = 'No account found with this email. Please register first.'
+      } else if (status === 401) {
+        message = 'You entered the wrong password. Please try again.'
+      } else {
+        message = 'Login failed. Please check your credentials.'
+      }
+      toast.error(message, { duration: 4000 })
     } finally {
       setLoading(false)
     }
@@ -32,11 +51,28 @@ export function AuthProvider({ children }) {
   const register = async (userData) => {
     setLoading(true)
     try {
-      await registerApi(userData)
+      // strip confirmPassword before sending to API
+      const { confirmPassword, ...payload } = userData
+      await registerApi(payload)
       toast.success('Account created! Please log in.')
       navigate('/login')
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Registration failed')
+      const status = err.response?.status
+      const detail = err.response?.data?.detail
+      let message
+      if (typeof detail === 'string' && detail.trim()) {
+        const lower = detail.toLowerCase()
+        if (lower.includes('already') || lower.includes('exist') || lower.includes('registered') || lower.includes('duplicate')) {
+          message = 'This email is already registered. Please login instead.'
+        } else {
+          message = detail
+        }
+      } else if (status === 400 || status === 409 || status === 422) {
+        message = 'This email is already registered. Please login instead.'
+      } else {
+        message = 'Registration failed. Please try again.'
+      }
+      toast.error(message, { duration: 4000 })
     } finally {
       setLoading(false)
     }

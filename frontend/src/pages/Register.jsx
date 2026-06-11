@@ -29,7 +29,7 @@ function StarField() {
 
 export default function Register() {
   const { register: registerUser, loading } = useAuth()
-  const { register, handleSubmit, formState: { errors } } = useForm()
+  const { register, handleSubmit, formState: { errors }, watch } = useForm()
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0a0a14' }}>
@@ -102,6 +102,23 @@ export default function Register() {
                 />
               </div>
               {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1.5">Confirm Password</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
+                <input
+                  {...register('confirmPassword', {
+                    required: 'Please confirm your password',
+                    validate: value => value === watch('password') || 'Passwords do not match',
+                  })}
+                  type="password"
+                  className="input-field pl-9"
+                  placeholder="••••••••"
+                />
+              </div>
+              {errors.confirmPassword && <p className="text-red-400 text-xs mt-1">{errors.confirmPassword.message}</p>}
             </div>
 
             <motion.button
