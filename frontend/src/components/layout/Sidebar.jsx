@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, CheckSquare, FileText, LogOut, Zap, Mail, X, Smartphone } from 'lucide-react'
+import { LayoutDashboard, CheckSquare, FileText, LogOut, Mail, X, Smartphone, Globe } from 'lucide-react'
+import SpiderManIcon from '../common/SpiderManIcon'
 import { useAuth } from '../../context/AuthContext'
 
 const navItems = [
@@ -7,6 +8,7 @@ const navItems = [
   { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
   { to: '/notes', icon: FileText, label: 'Notes' },
   { to: '/phone-notifications', icon: Smartphone, label: 'Phone Notifs' },
+  { to: '/browser', icon: Globe, label: 'Browser' },
 ]
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -26,11 +28,8 @@ export default function Sidebar({ isOpen, onClose }) {
         {/* Logo */}
         <div className="p-6 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #7c3aed, #06b6d4)' }}
-            >
-              <Zap size={18} className="text-white" />
+            <div className="flex items-center justify-center" style={{ width: 38, height: 38 }}>
+              <SpiderManIcon size={38} />
             </div>
             <span className="font-bold text-lg gradient-text">TaskHolder</span>
           </div>

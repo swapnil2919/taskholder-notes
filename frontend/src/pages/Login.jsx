@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
-import { Zap, Mail, Lock } from 'lucide-react'
+import { Mail, Lock } from 'lucide-react'
+import spidermanGif from '../assets/Spiderman.gif'
 import { useAuth } from '../context/AuthContext'
 import Spinner from '../components/common/Spinner'
 
@@ -43,15 +44,9 @@ export default function Login() {
         className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-8">
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.1 }}
-            className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-glow-lg animate-float"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #06b6d4)' }}
-          >
-            <Zap size={30} className="text-white" />
-          </motion.div>
+          <div className="mx-auto mb-5" style={{ width: 130, height: 130 }}>
+            <img src={spidermanGif} alt="Spider-Man" style={{ width: 130, height: 130, objectFit: 'contain' }} />
+          </div>
           <h1 className="text-3xl font-bold text-white">Welcome back</h1>
           <p className="text-slate-500 mt-1 text-sm">Sign in to your TaskHolder account</p>
         </div>

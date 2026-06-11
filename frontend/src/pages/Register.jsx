@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
-import { Zap, Mail, Lock, User } from 'lucide-react'
+import { Mail, Lock, User } from 'lucide-react'
+import SpiderManIcon from '../components/common/SpiderManIcon'
 import { useAuth } from '../context/AuthContext'
 import Spinner from '../components/common/Spinner'
 
@@ -49,7 +50,7 @@ export default function Register() {
             className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 animate-float"
             style={{ background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', boxShadow: '0 0 30px rgba(139,92,246,0.3)' }}
           >
-            <Zap size={30} className="text-white" />
+            <SpiderManIcon size={34} />
           </motion.div>
           <h1 className="text-3xl font-bold text-white">Create account</h1>
           <p className="text-slate-500 mt-1 text-sm">Get started with TaskHolder today</p>

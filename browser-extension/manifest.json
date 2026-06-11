@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "TaskHolder Browser",
+  "version": "1.0.0",
+  "description": "Removes iframe blocking headers so all websites load inside TaskHolder's embedded browser.",
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "storage"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "TaskHolder Browser"
+  }
+}

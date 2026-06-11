@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard'
 import Tasks from './pages/Tasks'
 import Notes from './pages/Notes'
 import PhoneNotifications from './pages/PhoneNotifications'
+import Browser from './pages/Browser'
 
 function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -90,6 +91,7 @@ export default function App() {
             <Route path="tasks" element={<Tasks />} />
             <Route path="notes" element={<Notes />} />
             <Route path="phone-notifications" element={<PhoneNotifications />} />
+            <Route path="browser" element={<Browser />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

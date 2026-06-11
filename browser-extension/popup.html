@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 290px;
+      background: #0a0a14;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 16px;
+      user-select: none;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 14px;
+    }
+    .logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+      box-shadow: 0 0 14px rgba(124,58,237,0.35);
+    }
+    .brand-name {
+      font-weight: 700;
+      font-size: 15px;
+      background: linear-gradient(135deg, #a78bfa, #22d3ee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand-sub { font-size: 11px; color: #475569; margin-top: 1px; }
+
+    /* ── Status card ── */
+    .status-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
+      padding: 13px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .status-card.on  { border-color: rgba(124,58,237,0.25); }
+    .status-card.off { border-color: rgba(255,255,255,0.05); }
+
+    .status-left { display: flex; align-items: center; gap: 10px; }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 6px rgba(34,197,94,0.6);
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .dot.off { background: #475569; box-shadow: none; }
+
+    .status-label { font-size: 13px; font-weight: 600; }
+    .status-desc  { font-size: 11px; color: #475569; margin-top: 2px; }
+    .rule-info    { font-size: 10px; color: #22c55e; margin-top: 3px; }
+
+    /* ── Toggle switch ── */
+    .switch { position: relative; width: 42px; height: 24px; cursor: pointer; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .track {
+      position: absolute;
+      inset: 0;
+      background: #1e293b;
+      border-radius: 12px;
+      transition: 0.25s;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .thumb {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      top: 3px;
+      left: 3px;
+      background: #475569;
+      border-radius: 50%;
+      transition: 0.25s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+    .switch input:checked ~ .track {
+      background: rgba(124,58,237,0.25);
+      border-color: #7c3aed;
+    }
+    .switch input:checked ~ .thumb {
+      transform: translateX(18px);
+      background: #7c3aed;
+      box-shadow: 0 0 8px rgba(124,58,237,0.5);
+    }
+
+    /* ── Info box ── */
+    .info {
+      background: rgba(124,58,237,0.07);
+      border: 1px solid rgba(124,58,237,0.14);
+      border-radius: 8px;
+      padding: 11px 13px;
+      font-size: 11px;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    .info strong { color: #a78bfa; }
+
+    /* ── Sites list ── */
+    .sites-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #334155;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 7px;
+    }
+    .sites {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 14px;
+    }
+    .site-tag {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 5px;
+      font-size: 10px;
+      color: #64748b;
+      padding: 3px 8px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      font-size: 10px;
+      color: #1e293b;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      padding-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo">⚡</div>
+    <div>
+      <div class="brand-name">TaskHolder Browser</div>
+      <div class="brand-sub">iframe unlocker</div>
+    </div>
+  </div>
+
+  <div class="status-card on" id="card">
+    <div class="status-left">
+      <div class="dot" id="dot"></div>
+      <div>
+        <div class="status-label" id="statusLabel">Active</div>
+        <div class="status-desc" id="statusDesc">All sites can load in iframe</div>
+        <div class="rule-info" id="ruleInfo"></div>
+      </div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="toggle" />
+      <span class="track"></span>
+      <span class="thumb"></span>
+    </label>
+  </div>
+
+  <div class="info">
+    Removes <strong>X-Frame-Options</strong> and <strong>CSP frame-ancestors</strong> response headers so sites like Instagram, Google &amp; Facebook load inside TaskHolder's browser.
+  </div>
+
+  <div class="sites-label">Now works inside TaskHolder</div>
+  <div class="sites">
+    <span class="site-tag">Instagram</span>
+    <span class="site-tag">Google</span>
+    <span class="site-tag">Facebook</span>
+    <span class="site-tag">Twitter / X</span>
+    <span class="site-tag">LinkedIn</span>
+    <span class="site-tag">Reddit</span>
+    <span class="site-tag">+ all others</span>
+  </div>
+
+  <div class="footer">Only removes headers on iframes &nbsp;·&nbsp; No data collected</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
