@@ -3,11 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import List, Optional
 from uuid import UUID
-from ..database import get_db
 from ..models.task import Task, TaskStatus, TaskPriority
 from ..models.user import User
 from ..schemas.task import TaskCreate, TaskUpdate, TaskResponse
-from ..auth.deps import get_current_user
+from ..auth.deps import get_current_user, get_user_db
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
@@ -16,7 +15,7 @@ async def get_tasks(
     status: Optional[TaskStatus] = None,
     priority: Optional[TaskPriority] = None,
     category: Optional[str] = None,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_user_db),
     current_user: User = Depends(get_current_user),
 ):
     query = select(Task).where(Task.user_id == current_user.id)
@@ -31,7 +30,7 @@ async def get_tasks(
 
 @router.get("/stats")
 async def get_task_stats(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_user_db),
     current_user: User = Depends(get_current_user),
 ):
     result = await db.execute(select(Task).where(Task.user_id == current_user.id))
@@ -45,7 +44,7 @@ async def get_task_stats(
 @router.post("/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 async def create_task(
     task_data: TaskCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_user_db),
     current_user: User = Depends(get_current_user),
 ):
     task = Task(**task_data.model_dump(), user_id=current_user.id)
@@ -57,7 +56,7 @@ async def create_task(
 @router.get("/{task_id}", response_model=TaskResponse)
 async def get_task(
     task_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_user_db),
     current_user: User = Depends(get_current_user),
 ):
     result = await db.execute(select(Task).where(Task.id == task_id, Task.user_id == current_user.id))
@@ -70,7 +69,7 @@ async def get_task(
 async def update_task(
     task_id: UUID,
     task_data: TaskUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_user_db),
     current_user: User = Depends(get_current_user),
 ):
     result = await db.execute(select(Task).where(Task.id == task_id, Task.user_id == current_user.id))
@@ -86,7 +85,7 @@ async def update_task(
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(
     task_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_user_db),
     current_user: User = Depends(get_current_user),
 ):
     result = await db.execute(select(Task).where(Task.id == task_id, Task.user_id == current_user.id))

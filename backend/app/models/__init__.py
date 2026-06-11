@@ -1,4 +1,5 @@
 from .user import User
+from .db_config import DBConfig
 from .task import Task
 from .note import Note
 from .phone_notification import PhoneNotification

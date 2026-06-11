@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login as loginApi, register as registerApi } from '../api/auth'
+import { listDbConfigs } from '../api/dbConfigs'
 import toast from 'react-hot-toast'
 
 const AuthContext = createContext(null)
@@ -21,7 +22,15 @@ export function AuthProvider({ children }) {
       localStorage.setItem('user', JSON.stringify(data.user))
       setUser(data.user)
       toast.success(`Welcome back, ${data.user.username}!`)
-      navigate('/dashboard')
+
+      // Check if the user has an active DB configured
+      try {
+        const { data: configs } = await listDbConfigs()
+        const hasActiveDb = configs.some(c => c.is_active)
+        navigate(hasActiveDb ? '/dashboard' : '/databases')
+      } catch {
+        navigate('/databases')
+      }
     } catch (err) {
       const status = err.response?.status
       const detail = err.response?.data?.detail
@@ -51,7 +60,6 @@ export function AuthProvider({ children }) {
   const register = async (userData) => {
     setLoading(true)
     try {
-      // strip confirmPassword before sending to API
       const { confirmPassword, ...payload } = userData
       await registerApi(payload)
       toast.success('Account created! Please log in.')

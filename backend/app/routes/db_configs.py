@@ -1,44 +1,14 @@
-import json
 import uuid
-from pathlib import Path
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy import text
-from ..database import db_manager, Base
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy import select, text
+from ..database import get_main_db, get_cached_engine_factory, Base
+from ..models.db_config import DBConfig
+from ..models.user import User
+from ..auth.deps import get_current_user
 
 router = APIRouter(prefix="/db-configs", tags=["Database Configs"])
-
-CONFIGS_FILE = Path(__file__).resolve().parent.parent.parent / "db_configs.json"
-
-
-def load_configs() -> list[dict]:
-    if not CONFIGS_FILE.exists():
-        return []
-    try:
-        return json.loads(CONFIGS_FILE.read_text())
-    except Exception:
-        return []
-
-
-def save_configs(configs: list[dict]):
-    CONFIGS_FILE.write_text(json.dumps(configs, indent=2))
-
-
-def update_env_db_url(new_url: str):
-    env_path = Path(__file__).resolve().parent.parent.parent / ".env"
-    if env_path.exists():
-        lines = env_path.read_text().splitlines()
-        new_lines, found = [], False
-        for line in lines:
-            if line.startswith("DATABASE_URL="):
-                new_lines.append(f"DATABASE_URL={new_url}")
-                found = True
-            else:
-                new_lines.append(line)
-        if not found:
-            new_lines.append(f"DATABASE_URL={new_url}")
-        env_path.write_text("\n".join(new_lines) + "\n")
 
 
 def _parse_host(url: str) -> str:
@@ -48,8 +18,8 @@ def _parse_host(url: str) -> str:
         return "unknown"
 
 
-async def _test_and_setup(url: str) -> int:
-    """Connect, return size_bytes. Raises HTTPException on failure."""
+async def _test_and_setup_user_db(url: str) -> int:
+    """Validate connection, create tasks/notes tables, return size_bytes."""
     test_engine = None
     try:
         test_engine = create_async_engine(url, connect_args={"ssl": "require"}, echo=False)
@@ -75,8 +45,6 @@ async def _test_and_setup(url: str) -> int:
     try:
         async with test_engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-            await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_api_token VARCHAR UNIQUE"))
-            await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_script_last_seen TIMESTAMPTZ"))
     except Exception as exc:
         await test_engine.dispose()
         raise HTTPException(
@@ -94,22 +62,33 @@ class DBConfigCreate(BaseModel):
 
 
 @router.get("")
-async def list_configs():
-    configs = load_configs()
-    active_url = db_manager.db_url
+async def list_configs(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_main_db),
+):
+    result = await db.execute(
+        select(DBConfig)
+        .where(DBConfig.user_id == current_user.id)
+        .order_by(DBConfig.created_at)
+    )
+    configs = result.scalars().all()
     return [
         {
-            "id": c["id"],
-            "name": c["name"],
-            "host": c["host"],
-            "is_active": c["url"] == active_url,
+            "id": str(c.id),
+            "name": c.name,
+            "host": c.host,
+            "is_active": c.id == current_user.active_db_config_id,
         }
         for c in configs
     ]
 
 
 @router.post("", status_code=201)
-async def add_config(req: DBConfigCreate):
+async def add_config(
+    req: DBConfigCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_main_db),
+):
     name = req.name.strip()
     url = req.url.strip()
 
@@ -122,50 +101,75 @@ async def add_config(req: DBConfigCreate):
             detail={"type": "invalid_url", "message": "URL must start with postgresql+asyncpg://"},
         )
 
-    # Check for duplicate name
-    configs = load_configs()
-    if any(c["name"].lower() == name.lower() for c in configs):
+    existing = await db.execute(
+        select(DBConfig).where(DBConfig.user_id == current_user.id, DBConfig.name.ilike(name))
+    )
+    if existing.scalar_one_or_none():
         raise HTTPException(400, detail={"type": "duplicate_name", "message": f'A database named "{name}" already exists.'})
 
-    size_bytes = await _test_and_setup(url)
-
+    size_bytes = await _test_and_setup_user_db(url)
     host = _parse_host(url)
-    new_config = {
-        "id": str(uuid.uuid4()),
-        "name": name,
-        "url": url,
-        "host": host,
-        "size_mb": round(size_bytes / (1024 * 1024), 2),
-    }
-    configs.append(new_config)
-    save_configs(configs)
 
-    return {"id": new_config["id"], "name": name, "host": host, "size_mb": new_config["size_mb"]}
+    config = DBConfig(id=uuid.uuid4(), user_id=current_user.id, name=name, url=url, host=host)
+    db.add(config)
+    await db.commit()
+    await db.refresh(config)
+
+    # Auto-activate if this is the user's first config
+    if not current_user.active_db_config_id:
+        current_user.active_db_config_id = config.id
+        await db.commit()
+        await db.refresh(current_user)
+
+    return {
+        "id": str(config.id),
+        "name": config.name,
+        "host": config.host,
+        "size_mb": round(size_bytes / (1024 * 1024), 2),
+        "is_active": current_user.active_db_config_id == config.id,
+    }
 
 
 @router.delete("/{config_id}", status_code=204)
-async def delete_config(config_id: str):
-    configs = load_configs()
-    new_configs = [c for c in configs if c["id"] != config_id]
-    if len(new_configs) == len(configs):
-        raise HTTPException(404, detail="Config not found")
-    save_configs(new_configs)
-
-
-@router.post("/{config_id}/activate")
-async def activate_config(config_id: str):
-    configs = load_configs()
-    config = next((c for c in configs if c["id"] == config_id), None)
+async def delete_config(
+    config_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_main_db),
+):
+    result = await db.execute(
+        select(DBConfig).where(DBConfig.id == config_id, DBConfig.user_id == current_user.id)
+    )
+    config = result.scalar_one_or_none()
     if not config:
         raise HTTPException(404, detail="Config not found")
 
-    # Already active — skip re-init
-    if db_manager.db_url == config["url"]:
-        return {"message": f"Already connected to '{config['name']}'", "already_active": True}
+    if str(current_user.active_db_config_id) == config_id:
+        current_user.active_db_config_id = None
+        await db.commit()
 
-    await _test_and_setup(config["url"])
+    await db.delete(config)
+    await db.commit()
 
-    db_manager.init(config["url"])
-    update_env_db_url(config["url"])
 
-    return {"message": f"Switched to '{config['name']}'", "already_active": False}
+@router.post("/{config_id}/activate")
+async def activate_config(
+    config_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_main_db),
+):
+    result = await db.execute(
+        select(DBConfig).where(DBConfig.id == config_id, DBConfig.user_id == current_user.id)
+    )
+    config = result.scalar_one_or_none()
+    if not config:
+        raise HTTPException(404, detail="Config not found")
+
+    await _test_and_setup_user_db(config.url)
+    get_cached_engine_factory(config.url)
+
+    already_active = str(current_user.active_db_config_id) == config_id
+    if not already_active:
+        current_user.active_db_config_id = config.id
+        await db.commit()
+
+    return {"message": f"Switched to '{config.name}'", "already_active": already_active}

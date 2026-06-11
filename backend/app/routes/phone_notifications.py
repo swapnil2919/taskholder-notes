@@ -8,7 +8,7 @@ from typing import List, Optional
 from uuid import UUID
 from datetime import datetime, timezone, timedelta
 
-from ..database import get_db
+from ..database import get_main_db
 from ..models.user import User
 from ..models.phone_notification import PhoneNotification
 from ..schemas.phone_notification import (
@@ -26,7 +26,7 @@ CONNECTED_THRESHOLD_SECONDS = 90
 
 async def get_user_by_token(
     x_api_token: str = Header(...),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_main_db),
 ) -> User:
     result = await db.execute(
         select(User).where(User.phone_api_token == x_api_token, User.is_active == True)
@@ -42,7 +42,7 @@ async def get_user_by_token(
 @router.post("/ingest", status_code=status.HTTP_201_CREATED)
 async def ingest_notification(
     data: PhoneNotificationIngest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_main_db),
     user: User = Depends(get_user_by_token),
 ):
     # Deduplicate by notif_id within last 60 seconds
@@ -74,7 +74,7 @@ async def ingest_notification(
 
 @router.post("/heartbeat")
 async def heartbeat(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_main_db),
     user: User = Depends(get_user_by_token),
 ):
     user.phone_script_last_seen = datetime.now(timezone.utc)
@@ -86,7 +86,7 @@ async def heartbeat(
 
 @router.get("/token", response_model=PhoneTokenResponse)
 async def get_or_create_token(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_main_db),
     current_user: User = Depends(get_current_user),
 ):
     if not current_user.phone_api_token:
@@ -98,7 +98,7 @@ async def get_or_create_token(
 
 @router.post("/token/regenerate", response_model=PhoneTokenResponse)
 async def regenerate_token(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_main_db),
     current_user: User = Depends(get_current_user),
 ):
     current_user.phone_api_token = secrets.token_urlsafe(32)
@@ -109,7 +109,7 @@ async def regenerate_token(
 
 @router.get("/status", response_model=ConnectionStatus)
 async def get_connection_status(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_main_db),
     current_user: User = Depends(get_current_user),
 ):
     last_seen = current_user.phone_script_last_seen
@@ -128,7 +128,7 @@ async def get_connection_status(
 async def get_notifications(
     unread_only: bool = False,
     limit: int = 50,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_main_db),
     current_user: User = Depends(get_current_user),
 ):
     query = select(PhoneNotification).where(PhoneNotification.user_id == current_user.id)
@@ -142,7 +142,7 @@ async def get_notifications(
 @router.patch("/{notif_id}/read")
 async def mark_read(
     notif_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_main_db),
     current_user: User = Depends(get_current_user),
 ):
     result = await db.execute(
@@ -162,7 +162,7 @@ async def mark_read(
 @router.delete("/{notif_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_notification(
     notif_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_main_db),
     current_user: User = Depends(get_current_user),
 ):
     result = await db.execute(
@@ -180,7 +180,7 @@ async def delete_notification(
 
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
 async def clear_all_notifications(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_main_db),
     current_user: User = Depends(get_current_user),
 ):
     await db.execute(
@@ -315,7 +315,7 @@ async def download_script_by_token(
 
 @router.get("/download-script", response_class=PlainTextResponse)
 async def download_script(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_main_db),
     current_user: User = Depends(get_current_user),
 ):
     """Download script via JWT — used by browser download button."""
