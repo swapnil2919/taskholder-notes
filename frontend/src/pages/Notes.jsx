@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Plus } from 'lucide-react'
+import { Plus, Search, X, ArrowUpAZ, ArrowDownAZ, Clock } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getNotes, createNote, updateNote, deleteNote } from '../api/notes'
 import NoteCard from '../components/notes/NoteCard'
@@ -11,6 +11,12 @@ import TextEditorPage from '../components/common/TextEditorPage'
 import { NoteSkeleton } from '../components/common/SkeletonCard'
 import Header from '../components/layout/Header'
 
+const SORT_OPTIONS = [
+  { key: 'newest', label: 'Newest', icon: Clock },
+  { key: 'az', label: 'A → Z', icon: ArrowUpAZ },
+  { key: 'za', label: 'Z → A', icon: ArrowDownAZ },
+]
+
 export default function Notes() {
   const [notes, setNotes] = useState([])
   const [loading, setLoading] = useState(false)
@@ -19,6 +25,8 @@ export default function Notes() {
   const [editingNote, setEditingNote] = useState(null)
   const [viewingNote, setViewingNote] = useState(null)
   const [textEditingNote, setTextEditingNote] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortKey, setSortKey] = useState('newest')
   const firstLoad = useRef(true)
 
   const fetchNotes = useCallback(async () => {
@@ -100,20 +108,73 @@ export default function Notes() {
     }
   }
 
-  const pinned = notes.filter(n => n.is_pinned)
-  const unpinned = notes.filter(n => !n.is_pinned)
+  const filteredNotes = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    let result = q
+      ? notes.filter(n =>
+          n.title?.toLowerCase().includes(q) ||
+          n.content?.toLowerCase().includes(q) ||
+          n.category?.toLowerCase().includes(q)
+        )
+      : notes
+
+    if (sortKey === 'az') result = [...result].sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+    else if (sortKey === 'za') result = [...result].sort((a, b) => (b.title || '').localeCompare(a.title || ''))
+
+    return result
+  }, [notes, searchQuery, sortKey])
+
+  const pinned = filteredNotes.filter(n => n.is_pinned)
+  const unpinned = filteredNotes.filter(n => !n.is_pinned)
 
   return (
     <div>
       <Header
         title="Notes"
-        subtitle={`${notes.length} note${notes.length !== 1 ? 's' : ''}`}
+        subtitle={`${filteredNotes.length} note${filteredNotes.length !== 1 ? 's' : ''}${searchQuery ? ` of ${notes.length}` : ''}`}
         action={
           <button onClick={() => { setEditingNote(null); setModalOpen(true) }} className="btn-primary">
             <Plus size={18} /> New Note
           </button>
         }
       />
+
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search notes..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-9 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        <div className="flex gap-1 bg-slate-800 border border-slate-700 rounded-lg p-1">
+          {SORT_OPTIONS.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => setSortKey(key)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                sortKey === key
+                  ? 'bg-purple-600 text-white'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Icon size={13} />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {pageLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -123,6 +184,13 @@ export default function Notes() {
         <div className="text-center py-20">
           <p className="text-slate-600 text-lg">No notes yet</p>
           <p className="text-slate-700 text-sm mt-1">Create your first note to get started</p>
+        </div>
+      ) : filteredNotes.length === 0 ? (
+        <div className="text-center py-20">
+          <p className="text-slate-500 text-lg">No notes match &quot;{searchQuery}&quot;</p>
+          <button onClick={() => setSearchQuery('')} className="text-purple-400 hover:text-purple-300 text-sm mt-2 transition-colors">
+            Clear search
+          </button>
         </div>
       ) : (
         <>
