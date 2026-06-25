@@ -81,6 +81,19 @@ export default function Sidebar({ isOpen, onClose }) {
               Send Email
             </a>
           </div>
+
+          <div className="pt-2 mt-2 border-t border-white/5">
+            <a
+              href="https://inboxiq-sp.streamlit.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={onClose}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-cyan-500/10 hover:text-cyan-400 transition-all duration-200"
+            >
+              <Mail size={18} />
+              InboxIQ
+            </a>
+          </div>
         </nav>
 
         {/* User */}
